@@ -20,28 +20,7 @@ namespace ComputerGraphicsProject2_4
         public int X { get; set; }
         public int Y { get; set; }
 
-        [NonSerialized]
-        private Color _pixelColor;
-
-        // Serializing Color as ARGB components
-        public byte A { get; set; }
-        public byte R { get; set; }
-        public byte G { get; set; }
-        public byte B { get; set; }
-
-        [XmlIgnore] // Ignoring this property during serialization
-        public Color PixelColor
-        {
-            get { return Color.FromArgb(A, R, G, B); }
-            set
-            {
-                _pixelColor = value;
-                A = value.A;
-                R = value.R;
-                G = value.G;
-                B = value.B;
-            }
-        }
+        public Color PixelColor;
 
 
         public Point(int x, int y, Color color)
