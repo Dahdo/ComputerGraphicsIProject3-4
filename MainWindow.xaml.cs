@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using Microsoft.Win32;
+using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -34,7 +35,6 @@ namespace ComputerGraphicsProject2_4
             InitializeComponent();
             DataContext = this;
             InitializeRasterizationBitmap();
-            initNewLine(); // Selected by default
         }
 
         private void InitializeRasterizationBitmap()
@@ -53,6 +53,8 @@ namespace ComputerGraphicsProject2_4
             switch (selectedShape)
             {
                 case "line":
+                    if (currentLine == null || (currentLine.startPoint.X != -1 && mouseDownCount == 0)) // Check whether the currentLine has been used
+                        initNewLine();
                     ++mouseDownCount;
                     if (mouseDownCount == 1)
                     {
@@ -65,10 +67,12 @@ namespace ComputerGraphicsProject2_4
                         currentLine.endPoint.Y = (int)e.GetPosition(ImageCanvas).Y;
                         currentLine.Draw();
 
-                        initNewLine(); // Create new Line object and reset mouseDownCount
+                        mouseDownCount = 0;
                     }
                     break;
                 case "polygon":
+                    if (currentPolygon == null || (currentPolygon.nextPoint.X != -1 && mouseDownCount == 0)) // Check whether the currentPolygon has been used
+                        initNewPolygon();
                     ++mouseDownCount;
                     Point tmpPoint;
                     if (mouseDownCount > 1)
@@ -86,11 +90,14 @@ namespace ComputerGraphicsProject2_4
                     }
                     if (currentPolygon.lastEdge(tmpPoint))
                     {
-                        initNewPolygon(); // Create new Polygon object and reset mouseDownCount
+                        mouseDownCount = 0; // Create new Polygon object and reset mouseDownCount
                     }
 
                     break;
                 case "circle":
+                    if (currentCircle == null || (currentCircle.startPoint.X != -1 && mouseDownCount == 0)) // Check whether the currentCircle has been used
+                        initNewCircle();
+
                     ++mouseDownCount;
                     if (mouseDownCount == 1)
                     {
@@ -103,12 +110,13 @@ namespace ComputerGraphicsProject2_4
                         currentCircle.endPoint.Y = (int)e.GetPosition(ImageCanvas).Y;
                         currentCircle.Draw();
 
-                        initNewCircle(); // Create new Circle object and reset mouseDownCount
+                        mouseDownCount = 0; // Reset mouseDownCount
                     }
                     break;
 
                 case "labpart":
-                    ++mouseDownCount;
+                    if (currentLabPart == null || (currentLabPart.point0.X != -1 && mouseDownCount == 0)) // Check whether the currentLabPart has been used
+                        initNewLabPart();
                     if (mouseDownCount == 1)
                     {
                         currentLabPart.point0.X = (int)e.GetPosition(ImageCanvas).X;
@@ -129,7 +137,7 @@ namespace ComputerGraphicsProject2_4
                         currentLabPart.point3.X = (int)e.GetPosition(ImageCanvas).X;
                         currentLabPart.point3.Y = (int)e.GetPosition(ImageCanvas).Y;
                         currentLabPart.Draw();
-                        initNewLabPart();
+                        mouseDownCount = 0;
                     }
                     break;
             }
@@ -188,25 +196,25 @@ namespace ComputerGraphicsProject2_4
         private void LineRadioBtn_Checked(object sender, RoutedEventArgs e)
         {
             selectedShape = "line";
-            initNewLine();
+            //initNewLine();
         }
 
         private void PolygonRadioBtn_Checked(object sender, RoutedEventArgs e)
         {
             selectedShape = "polygon";
-            initNewPolygon();
+            //initNewPolygon();
         }
 
         private void LabPart3RadioBtn_Checked(object sender, RoutedEventArgs e)
         {
             selectedShape = "labpart";
-            initNewLabPart();
+            //initNewLabPart();
         }
 
         private void CircleRadioBtn_Checked(object sender, RoutedEventArgs e)
         {
             selectedShape = "circle";
-            initNewCircle();
+            //initNewCircle();
         }
 
         private void ThickLineCheckBox_Checked(object sender, RoutedEventArgs e)
@@ -313,14 +321,31 @@ namespace ComputerGraphicsProject2_4
             shapes.Clear(); // clear the shapes off the list
         }
 
+
         private void SaveShapes_Click(object sender, RoutedEventArgs e)
         {
-            // Serialize the list of shapes
-            XmlSerializer serializer = new XmlSerializer(typeof(List<Shape>));
-            using (FileStream stream = new FileStream("shapes.xml", FileMode.Create))
+
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "XML files(*.xml)|*.xml";
+
+            if(saveFileDialog.ShowDialog() == true)
             {
-                serializer.Serialize(stream, shapes);
+                string fileName = saveFileDialog.FileName;
+                try
+                {
+                    // Serialize the list of shapes
+                    XmlSerializer serializer = new XmlSerializer(typeof(List<Shape>));
+                    using (FileStream stream = new FileStream(fileName, FileMode.Create))
+                    {
+                        serializer.Serialize(stream, shapes);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error saving file: " + ex.Message);
+                }
             }
+
         }
 
         private void ImageCanvas_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
@@ -405,5 +430,37 @@ namespace ComputerGraphicsProject2_4
                 MessageBox.Show("Please enter a valid thickness values.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+        private void LoadShapes_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "XML files (*.xml)|*.xml";
+
+            if(openFileDialog.ShowDialog() == true)
+            {
+                string fileName = openFileDialog.FileName;
+                try
+                {
+                    XmlSerializer serializer = new XmlSerializer(typeof(List<Shape>));
+                    using (FileStream stream = new FileStream(fileName, FileMode.Open))
+                    {
+                        shapes = (List<Shape>)serializer.Deserialize(stream);
+
+                        // Redraw the loaded shapes
+                        setDefaultBgColor();
+                        foreach (Shape shape in shapes)
+                        {
+                            shape.imageCanvasBitmap = imageCanvasBitmap;
+                            shape.Draw();
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error loading file: " + ex.Message);
+                }
+            }
+        }
+
     }
 }

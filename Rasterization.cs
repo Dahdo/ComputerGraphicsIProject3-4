@@ -51,12 +51,23 @@ namespace ComputerGraphicsProject2_4
             PixelColor = color;
         }
 
+        public Point()
+        {
+            X = -1;
+            Y = -1;
+            PixelColor = Colors.Yellow;
+        }
+
         public override string ToString()
         {
             return "(" + this.X + ", " + this.Y + ")";
         }
     }
 
+    [Serializable]
+    [XmlInclude(typeof(Line))]
+    [XmlInclude(typeof(Circle))]
+    [XmlInclude(typeof(Polygon))]
     public abstract class Shape
     {
         public Color PixelColor { get; set; }
@@ -88,29 +99,29 @@ namespace ComputerGraphicsProject2_4
 
                 unsafe
                 {
-                        // Get a pointer to the back buffer.
-                        IntPtr pBackBuffer = imageCanvasBitmap.BackBuffer;
-                        // Find the address of the pixel to draw.
-                        pBackBuffer += row * imageCanvasBitmap.BackBufferStride;
-                        pBackBuffer += column * 3;
+                    // Get a pointer to the back buffer.
+                    IntPtr pBackBuffer = imageCanvasBitmap.BackBuffer;
+                    // Find the address of the pixel to draw.
+                    pBackBuffer += row * imageCanvasBitmap.BackBufferStride;
+                    pBackBuffer += column * 3;
 
-                        // Compute the pixel's color.
-                        int color_data = color.R << 16; // R
-                        color_data |= color.G << 8;   // G
-                        color_data |= color.B << 0;   // B
+                    // Compute the pixel's color.
+                    int color_data = color.R << 16; // R
+                    color_data |= color.G << 8;   // G
+                    color_data |= color.B << 0;   // B
 
-                        //try
-                        //{
-                            //Assign the color data to the pixel.
-                            *((int*)pBackBuffer) = color_data;
-                            // Specify the area of the bitmap that changed.
-                            imageCanvasBitmap.AddDirtyRect(new Int32Rect(column, row, 1, 1));
-                        //}
-                        //catch(Exception e)
-                        //{
-                        //    MessageBox.Show(e.Message);
-                        //    return;
-                        //}
+                    //try
+                    //{
+                    //Assign the color data to the pixel.
+                    *((int*)pBackBuffer) = color_data;
+                    // Specify the area of the bitmap that changed.
+                    imageCanvasBitmap.AddDirtyRect(new Int32Rect(column, row, 1, 1));
+                    //}
+                    //catch(Exception e)
+                    //{
+                    //    MessageBox.Show(e.Message);
+                    //    return;
+                    //}
                 }
             }
             finally
@@ -122,7 +133,7 @@ namespace ComputerGraphicsProject2_4
         protected void PutPixel(Point point)
         {
             int radius;
-            if(Thickness == 1 || ThickLine == false)
+            if (Thickness == 1 || ThickLine == false)
             {
                 PutSinglePixel(point);
                 return;
@@ -136,7 +147,7 @@ namespace ComputerGraphicsProject2_4
             double x, y;
             int numPoints = Thickness * Thickness;
 
-            for (double i = 0; i < numPoints; i ++)
+            for (double i = 0; i < numPoints; i++)
             {
                 double theta = 2 * Math.PI * i / numPoints;
                 x = radius * Math.Cos(theta);
@@ -150,7 +161,7 @@ namespace ComputerGraphicsProject2_4
     [Serializable]
     public class Line : Shape
     {
-        public Point startPoint {  get; set; }
+        public Point startPoint { get; set; }
         public Point endPoint { get; set; }
 
         public Line()
@@ -192,7 +203,7 @@ namespace ComputerGraphicsProject2_4
                 Y2 = -Y2;
                 negativeY = true;
             }
-            
+
 
             int x = X1, y = Y1;
             PutPixel(new Point(Math.Abs(x), Math.Abs(y), PixelColor));
@@ -245,7 +256,7 @@ namespace ComputerGraphicsProject2_4
                             PutPixel(new Point(Math.Abs(x), Math.Abs((int)y_exact), c1));
                             PutPixel(new Point(Math.Abs(x), Math.Abs((int)y_exact) + 1, c2));
                         }
-                        
+
 
                         y_exact += m;
                     }
@@ -294,7 +305,7 @@ namespace ComputerGraphicsProject2_4
                             PutPixel(new Point(Math.Abs((int)x_exact), Math.Abs(y), c1));
                             PutPixel(new Point(Math.Abs((int)x_exact) + 1, Math.Abs(y), c2));
                         }
-                        
+
 
                         x_exact += m_inv;
                     }
@@ -379,7 +390,7 @@ namespace ComputerGraphicsProject2_4
 
                     putPoints(x, y_exact_ceil, c2);
                     putPoints(x, y_exact_ceil - 1, c1);
-  
+
                 }
                 else
                 {
@@ -407,7 +418,7 @@ namespace ComputerGraphicsProject2_4
 
         public override void Draw()
         {
-            if(this.startPoint.X != -1 && this.endPoint.Y != -1)
+            if (this.startPoint.X != -1 && this.endPoint.Y != -1)
             {
                 CalculateMidpointCircleAlgorithm();
             }
@@ -424,10 +435,12 @@ namespace ComputerGraphicsProject2_4
     }
 
     [Serializable]
-    public class Polygon:Shape
+    public class Polygon : Shape
     {
         private Point _nextPoint;
-        public Point nextPoint { get => _nextPoint; 
+        public Point nextPoint
+        {
+            get => _nextPoint;
             set
             {
                 if (prevPoint == null && _nextPoint.X != -1)
@@ -477,7 +490,7 @@ namespace ComputerGraphicsProject2_4
 
         public bool lastEdge(Point point)
         {
-            if(lineList != null && lineList.Count >  0)
+            if (lineList != null && lineList.Count > 0)
                 return getDistance(lineList.First().startPoint, point) <= 10;
             return false;
         }
@@ -489,8 +502,9 @@ namespace ComputerGraphicsProject2_4
 
         public override void Draw()
         {
-            foreach(Line line in lineList)
+            foreach (Line line in lineList)
             {
+                line.imageCanvasBitmap = imageCanvasBitmap;
                 line.Antialiasing = this.Antialiasing;
                 line.ThickLine = this.ThickLine;
                 line.Thickness = this.Thickness;
@@ -507,9 +521,9 @@ namespace ComputerGraphicsProject2_4
 
         public override bool IsSelected(int x, int y)
         {
-            foreach(Line line in lineList)
+            foreach (Line line in lineList)
             {
-                if(line.IsSelected(x, y)) 
+                if (line.IsSelected(x, y))
                     return true;
             }
             return false;
@@ -543,7 +557,7 @@ namespace ComputerGraphicsProject2_4
         }
         private void InterpolatePoints()
         {
-            for(double t = 0; t <= 1; t += 0.01)
+            for (double t = 0; t <= 1; t += 0.01)
             {
                 double x = Math.Pow((1 - t), 3) * point0.X + 3 * Math.Pow((1 - t), 2) * t * point1.X + 3 * (1 - t) * t * t * point2.X + Math.Pow(t, 3) + Math.Pow(t, 3) * point3.X;
                 double y = Math.Pow((1 - t), 3) * point0.Y + 3 * Math.Pow((1 - t), 2) * t * point1.Y + 3 * (1 - t) * t * t * point2.Y + Math.Pow(t, 3) + Math.Pow(t, 3) * point3.Y;

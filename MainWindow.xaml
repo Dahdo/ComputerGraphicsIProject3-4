@@ -45,7 +45,7 @@
         </TabControl>
         <DockPanel Grid.Column="1" Grid.ColumnSpan="2" Margin="313,0,0,0">
             <WrapPanel DockPanel.Dock="Bottom"  HorizontalAlignment="Center" Margin="0 5">
-                <Button Name="OpenShapes" Margin="10 0" Content="Open" Style="{StaticResource NonFunctionalButtons}" />
+                <Button Name="LoadShapes" Margin="10 0" Content="Load" Style="{StaticResource NonFunctionalButtons}" Click="LoadShapes_Click" />
                 <Button Name="ClearAllShapes" Margin="10 0" Content="Clear All" Style="{StaticResource NonFunctionalButtons}" Click="ClearAllShapes_Click" />
                 <Button Name="SaveShapes" Margin="10 0" Content="Save" Style="{StaticResource NonFunctionalButtons}" Click="SaveShapes_Click"/>
             </WrapPanel>
