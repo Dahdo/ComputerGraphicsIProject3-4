@@ -12,7 +12,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Xml.Serialization;
 
-namespace ComputerGraphicsProject2_4
+namespace ComputerGraphicsProject3_4
 {
     
     public partial class MainWindow : Window

@@ -12,7 +12,7 @@ using System.Windows.Media.Imaging;
 using System.Xml.Serialization;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace ComputerGraphicsProject2_4
+namespace ComputerGraphicsProject3_4
 {
     [Serializable]
     public class Point
