@@ -511,35 +511,22 @@ namespace ComputerGraphicsProject3_4
         private void ImageCanvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
 
-            //if (dragMode && isDragging)
-            //{
-            //    int x = (int)e.GetPosition(ImageCanvas).X;
-            //    int y = (int)e.GetPosition(ImageCanvas).Y;
-            //    dragPoint = new Point(x, y, Colors.Black);
+            if (dragMode && isDragging)
+            {
+                setDefaultBgColor();
+                foreach (Shape shape in shapes)
+                {
+                    shape.imageCanvasBitmap = imageCanvasBitmap;
+                    shape.Draw();
+                }
+            }
+            
 
-            //    if (dragShapeIndex != -1)
-            //    {
-            //        if (shapes[dragShapeIndex] is Line)
-            //        {
-            //            // Clear the previous shape off the canvas
-            //            colorShape(shapes[dragShapeIndex], defaultBgColor);
-
-            //            if (dragShapePointNum == 0)
-            //                shapes[dragShapeIndex].startPoint = dragPoint;
-            //            else if (dragShapePointNum == 1)
-            //                shapes[dragShapeIndex].endPoint = dragPoint;
-
-            //            // Redraw the new shape
-            //            colorShape(shapes[dragShapeIndex], shapes[dragShapeIndex].PixelColor);
-            //        }
-            //        else if (shapes[dragShapeIndex] is Circle)
-            //        {
-            //            // Handle Circle
-            //        }
-
-            //    }
-            //}
             isDragging = false;
+
+            // Reset
+            dragShapeIndex = -1;
+            dragShapePointNum = -1;
         }
 
         private void colorShape(Shape shape, System.Windows.Media.Color color)
@@ -571,13 +558,13 @@ namespace ComputerGraphicsProject3_4
 
                         // Redraw the new shape
                         colorShape(shapes[dragShapeIndex], shapes[dragShapeIndex].PixelColor);
+
                     }
                     else if (shapes[dragShapeIndex] is Circle)
                     {
                         // Clear the previous shape off the canvas
                         //colorShape(shapes[dragShapeIndex], defaultBgColor);
 
-                        
                         int radius = shapes[dragShapeIndex].getDistance(shapes[dragShapeIndex].startPoint, shapes[dragShapeIndex].endPoint);
                         
                         int centerX = dragPoint.X;
@@ -590,7 +577,6 @@ namespace ComputerGraphicsProject3_4
                         shapes[dragShapeIndex].endPoint = new Point(circumX, circumY, shapes[dragShapeIndex].PixelColor);
 
                         // Redraw the new shape
-                        colorShape(shapes[dragShapeIndex], defaultBgColor);
                         colorShape(shapes[dragShapeIndex], shapes[dragShapeIndex].PixelColor);
                     }
 
