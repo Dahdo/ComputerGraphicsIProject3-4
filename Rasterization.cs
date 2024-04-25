@@ -51,6 +51,8 @@ namespace ComputerGraphicsProject3_4
     {
         public Color PixelColor { get; set; }
         public Color BgColor { get; set; }
+        public Point startPoint { get; set; }
+        public Point endPoint { get; set; }
         [XmlIgnore]
         public WriteableBitmap? imageCanvasBitmap { get; set; }
         public int Thickness { get; set; }
@@ -135,14 +137,15 @@ namespace ComputerGraphicsProject3_4
             }
         }
         public abstract bool IsSelected(int x, int y);
+        public int getDistance(Point p1, Point p2)
+        {
+            return (int)Math.Sqrt(Math.Pow(p2.X - p1.X, 2) + Math.Pow(p2.Y - p1.Y, 2));
+        }
     }
 
     [Serializable]
     public class Line : Shape
     {
-        public Point startPoint { get; set; }
-        public Point endPoint { get; set; }
-
         public Line()
         {
             Thickness = 1;
@@ -316,9 +319,6 @@ namespace ComputerGraphicsProject3_4
     [Serializable]
     public class Circle : Shape
     {
-        public Point startPoint { get; set; }
-        public Point endPoint { get; set; }
-
         public Circle()
         {
             Thickness = 1;
@@ -474,10 +474,6 @@ namespace ComputerGraphicsProject3_4
             return false;
         }
 
-        private int getDistance(Point p1, Point p2)
-        {
-            return (int)Math.Sqrt(Math.Pow(p2.X - p1.X, 2) + Math.Pow(p2.Y - p1.Y, 2));
-        }
 
         public override void Draw()
         {

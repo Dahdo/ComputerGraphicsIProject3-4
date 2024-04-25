@@ -40,6 +40,7 @@
                         <Label Content="Thickness" HorizontalAlignment="Left" Margin="0 0 10 0"/>
                         <TextBox Name="ThickLineTextBox" Width="90" Margin="0 0 10 0" VerticalContentAlignment="Center"  HorizontalContentAlignment="Center" HorizontalAlignment="Center" TextChanged="ThickLineTextBox_TextChanged"/>
                     </StackPanel>
+                    <CheckBox x:Name="DragModeCheckBox" Content="Drag Mode" Margin="0,0,0,5"  Unchecked="DragModeCheckBox_UnChecked" Checked="DragModeCheckBox_Checked" />
                 </StackPanel>
             </TabItem>
         </TabControl>
@@ -49,7 +50,7 @@
                 <Button Name="ClearAllShapes" Margin="10 0" Content="Clear All" Style="{StaticResource NonFunctionalButtons}" Click="ClearAllShapes_Click" />
                 <Button Name="SaveShapes" Margin="10 0" Content="Save" Style="{StaticResource NonFunctionalButtons}" Click="SaveShapes_Click"/>
             </WrapPanel>
-            <Image DockPanel.Dock="Top" x:Name="ImageCanvas" MouseLeftButtonDown="ImageCanvas_MouseLeftButtonDown" MouseRightButtonDown="ImageCanvas_MouseRightButtonDown" Width="1040" Height="640">
+            <Image DockPanel.Dock="Top" x:Name="ImageCanvas" MouseLeftButtonDown="ImageCanvas_MouseLeftButtonDown" MouseMove="ImageCanvas_MouseMove" MouseLeftButtonUp="ImageCanvas_MouseLeftButtonUp" MouseRightButtonDown="ImageCanvas_MouseRightButtonDown" Width="1040" Height="640">
                 <Image.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Delete" Click="ShapeDelete_Click"/>

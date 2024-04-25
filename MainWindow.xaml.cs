@@ -27,9 +27,14 @@ namespace ComputerGraphicsProject3_4
         public static System.Windows.Media.Color defaultBgColor = Colors.Black;
 
         int mouseDownCount = 0;
-        string selectedShape = "line"; // Line selected by default
+        string selectedShape;
         private static int shapeThickness = 1;
         private Point rightClickedPoint;
+        private bool dragMode = false;
+        private Point dragPoint;
+        private bool isDragging = false;
+        private int dragShapeIndex = -1;
+        private int dragShapePointNum = -1;
         public MainWindow()
         {
             InitializeComponent();
@@ -50,96 +55,134 @@ namespace ComputerGraphicsProject3_4
 
         private void ImageCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            switch (selectedShape)
+            if(dragMode)
             {
-                case "line":
-                    if (currentLine == null || (currentLine.startPoint.X != -1 && mouseDownCount == 0)) // Check whether the currentLine has been used
-                        initNewLine();
-                    ++mouseDownCount;
-                    if (mouseDownCount == 1)
+                isDragging = true;
+                int x = (int)e.GetPosition(ImageCanvas).X;
+                int y = (int)e.GetPosition(ImageCanvas).Y;
+                dragPoint = new Point(x, y, Colors.Black);
+                foreach(Shape shape in shapes)
+                {
+                    if(shape is Line)
                     {
-                        currentLine.startPoint.X = (int)e.GetPosition(ImageCanvas).X;
-                        currentLine.startPoint.Y = (int)e.GetPosition(ImageCanvas).Y;
-                    }
-                    if (mouseDownCount == 2)
-                    {
-                        currentLine.endPoint.X = (int)e.GetPosition(ImageCanvas).X;
-                        currentLine.endPoint.Y = (int)e.GetPosition(ImageCanvas).Y;
-                        currentLine.Draw();
-
-                        mouseDownCount = 0;
-                    }
-                    break;
-                case "polygon":
-                    if (currentPolygon == null || (currentPolygon.nextPoint.X != -1 && mouseDownCount == 0)) // Check whether the currentPolygon has been used
-                        initNewPolygon();
-                    ++mouseDownCount;
-                    Point tmpPoint;
-                    if (mouseDownCount > 1)
-                    {
-                        tmpPoint = new Point((int)e.GetPosition(ImageCanvas).X,
-                            (int)e.GetPosition(ImageCanvas).Y, currentPolygon.PixelColor);
-                        currentPolygon.nextPoint = tmpPoint;
-                        currentPolygon.LineDraw();
-                    }
-                    else
-                    {
-                        tmpPoint = new Point((int)e.GetPosition(ImageCanvas).X,
-                            (int)e.GetPosition(ImageCanvas).Y, currentPolygon.PixelColor);
-                        currentPolygon.nextPoint = tmpPoint;
-                    }
-                    if (currentPolygon.lastEdge(tmpPoint))
-                    {
-                        mouseDownCount = 0; // Create new Polygon object and reset mouseDownCount
+                        if(shape.getDistance(dragPoint, shape.startPoint) <= 10)
+                        {
+                            dragShapeIndex = shapes.IndexOf(shape);
+                            dragShapePointNum = 0;
+                            break;
+                        }
+                        else if (shape.getDistance(dragPoint, shape.endPoint) <= 10)
+                        {
+                            dragShapeIndex = shapes.IndexOf(shape);
+                            dragShapePointNum = 1;
+                            break;
+                        }
                     }
 
-                    break;
-                case "circle":
-                    if (currentCircle == null || (currentCircle.startPoint.X != -1 && mouseDownCount == 0)) // Check whether the currentCircle has been used
-                        initNewCircle();
+                    else if (shape is Circle)
+                    {
+                        if (shape.IsSelected(dragPoint.X, dragPoint.Y))
+                        {
+                            dragShapeIndex = shapes.IndexOf(shape);
+                            dragShapePointNum = 0;
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                switch (selectedShape)
+                {
+                    case "line":
+                        if (currentLine == null || (currentLine.startPoint.X != -1 && mouseDownCount == 0)) // Check whether the currentLine has been used
+                            initNewLine();
+                        ++mouseDownCount;
+                        if (mouseDownCount == 1)
+                        {
+                            currentLine.startPoint.X = (int)e.GetPosition(ImageCanvas).X;
+                            currentLine.startPoint.Y = (int)e.GetPosition(ImageCanvas).Y;
+                        }
+                        if (mouseDownCount == 2)
+                        {
+                            currentLine.endPoint.X = (int)e.GetPosition(ImageCanvas).X;
+                            currentLine.endPoint.Y = (int)e.GetPosition(ImageCanvas).Y;
+                            currentLine.Draw();
 
-                    ++mouseDownCount;
-                    if (mouseDownCount == 1)
-                    {
-                        currentCircle.startPoint.X = (int)e.GetPosition(ImageCanvas).X;
-                        currentCircle.startPoint.Y = (int)e.GetPosition(ImageCanvas).Y;
-                    }
-                    if (mouseDownCount == 2)
-                    {
-                        currentCircle.endPoint.X = (int)e.GetPosition(ImageCanvas).X;
-                        currentCircle.endPoint.Y = (int)e.GetPosition(ImageCanvas).Y;
-                        currentCircle.Draw();
+                            mouseDownCount = 0;
+                        }
+                        break;
+                    case "polygon":
+                        if (currentPolygon == null || (currentPolygon.nextPoint.X != -1 && mouseDownCount == 0)) // Check whether the currentPolygon has been used
+                            initNewPolygon();
+                        ++mouseDownCount;
+                        Point tmpPoint;
+                        if (mouseDownCount > 1)
+                        {
+                            tmpPoint = new Point((int)e.GetPosition(ImageCanvas).X,
+                                (int)e.GetPosition(ImageCanvas).Y, currentPolygon.PixelColor);
+                            currentPolygon.nextPoint = tmpPoint;
+                            currentPolygon.LineDraw();
+                        }
+                        else
+                        {
+                            tmpPoint = new Point((int)e.GetPosition(ImageCanvas).X,
+                                (int)e.GetPosition(ImageCanvas).Y, currentPolygon.PixelColor);
+                            currentPolygon.nextPoint = tmpPoint;
+                        }
+                        if (currentPolygon.lastEdge(tmpPoint))
+                        {
+                            mouseDownCount = 0; // Create new Polygon object and reset mouseDownCount
+                        }
 
-                        mouseDownCount = 0; // Reset mouseDownCount
-                    }
-                    break;
+                        break;
+                    case "circle":
+                        if (currentCircle == null || (currentCircle.startPoint.X != -1 && mouseDownCount == 0)) // Check whether the currentCircle has been used
+                            initNewCircle();
 
-                case "labpart":
-                    if (currentLabPart == null || (currentLabPart.point0.X != -1 && mouseDownCount == 0)) // Check whether the currentLabPart has been used
-                        initNewLabPart();
-                    if (mouseDownCount == 1)
-                    {
-                        currentLabPart.point0.X = (int)e.GetPosition(ImageCanvas).X;
-                        currentLabPart.point0.Y = (int)e.GetPosition(ImageCanvas).Y;
-                    }
-                    if (mouseDownCount == 2)
-                    {
-                        currentLabPart.point1.X = (int)e.GetPosition(ImageCanvas).X;
-                        currentLabPart.point1.Y = (int)e.GetPosition(ImageCanvas).Y;
-                    }
-                    if (mouseDownCount == 3)
-                    {
-                        currentLabPart.point2.X = (int)e.GetPosition(ImageCanvas).X;
-                        currentLabPart.point2.Y = (int)e.GetPosition(ImageCanvas).Y;
-                    }
-                    if (mouseDownCount == 4)
-                    {
-                        currentLabPart.point3.X = (int)e.GetPosition(ImageCanvas).X;
-                        currentLabPart.point3.Y = (int)e.GetPosition(ImageCanvas).Y;
-                        currentLabPart.Draw();
-                        mouseDownCount = 0;
-                    }
-                    break;
+                        ++mouseDownCount;
+                        if (mouseDownCount == 1)
+                        {
+                            currentCircle.startPoint.X = (int)e.GetPosition(ImageCanvas).X;
+                            currentCircle.startPoint.Y = (int)e.GetPosition(ImageCanvas).Y;
+                        }
+                        if (mouseDownCount == 2)
+                        {
+                            currentCircle.endPoint.X = (int)e.GetPosition(ImageCanvas).X;
+                            currentCircle.endPoint.Y = (int)e.GetPosition(ImageCanvas).Y;
+                            currentCircle.Draw();
+
+                            mouseDownCount = 0; // Reset mouseDownCount
+                        }
+                        break;
+
+                    case "labpart":
+                        if (currentLabPart == null || (currentLabPart.point0.X != -1 && mouseDownCount == 0)) // Check whether the currentLabPart has been used
+                            initNewLabPart();
+                        if (mouseDownCount == 1)
+                        {
+                            currentLabPart.point0.X = (int)e.GetPosition(ImageCanvas).X;
+                            currentLabPart.point0.Y = (int)e.GetPosition(ImageCanvas).Y;
+                        }
+                        if (mouseDownCount == 2)
+                        {
+                            currentLabPart.point1.X = (int)e.GetPosition(ImageCanvas).X;
+                            currentLabPart.point1.Y = (int)e.GetPosition(ImageCanvas).Y;
+                        }
+                        if (mouseDownCount == 3)
+                        {
+                            currentLabPart.point2.X = (int)e.GetPosition(ImageCanvas).X;
+                            currentLabPart.point2.Y = (int)e.GetPosition(ImageCanvas).Y;
+                        }
+                        if (mouseDownCount == 4)
+                        {
+                            currentLabPart.point3.X = (int)e.GetPosition(ImageCanvas).X;
+                            currentLabPart.point3.Y = (int)e.GetPosition(ImageCanvas).Y;
+                            currentLabPart.Draw();
+                            mouseDownCount = 0;
+                        }
+                        break;
+                }
             }
 
         }
@@ -196,25 +239,21 @@ namespace ComputerGraphicsProject3_4
         private void LineRadioBtn_Checked(object sender, RoutedEventArgs e)
         {
             selectedShape = "line";
-            //initNewLine();
         }
 
         private void PolygonRadioBtn_Checked(object sender, RoutedEventArgs e)
         {
             selectedShape = "polygon";
-            //initNewPolygon();
         }
 
         private void LabPart3RadioBtn_Checked(object sender, RoutedEventArgs e)
         {
             selectedShape = "labpart";
-            //initNewLabPart();
         }
 
         private void CircleRadioBtn_Checked(object sender, RoutedEventArgs e)
         {
             selectedShape = "circle";
-            //initNewCircle();
         }
 
         private void ThickLineCheckBox_Checked(object sender, RoutedEventArgs e)
@@ -353,10 +392,6 @@ namespace ComputerGraphicsProject3_4
             int x = (int)e.GetPosition(ImageCanvas).X;
             int y = (int)e.GetPosition(ImageCanvas).Y;
             rightClickedPoint = new Point(x, y, Colors.Black);
-            //foreach(Shape shape in shapes)
-            //{
-            //    MessageBox.Show(shape.IsSelected(x, y).ToString());
-            //}
             e.Handled = true;
         }
         private void ShapeDelete_Click(object sender, RoutedEventArgs e)
@@ -462,5 +497,105 @@ namespace ComputerGraphicsProject3_4
             }
         }
 
+        private void DragModeCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            dragMode = true;
+            dragPoint = new Point();
+        }
+
+        private void DragModeCheckBox_UnChecked(object sender, RoutedEventArgs e)
+        {
+            dragMode = false;
+        }
+
+        private void ImageCanvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+
+            //if (dragMode && isDragging)
+            //{
+            //    int x = (int)e.GetPosition(ImageCanvas).X;
+            //    int y = (int)e.GetPosition(ImageCanvas).Y;
+            //    dragPoint = new Point(x, y, Colors.Black);
+
+            //    if (dragShapeIndex != -1)
+            //    {
+            //        if (shapes[dragShapeIndex] is Line)
+            //        {
+            //            // Clear the previous shape off the canvas
+            //            colorShape(shapes[dragShapeIndex], defaultBgColor);
+
+            //            if (dragShapePointNum == 0)
+            //                shapes[dragShapeIndex].startPoint = dragPoint;
+            //            else if (dragShapePointNum == 1)
+            //                shapes[dragShapeIndex].endPoint = dragPoint;
+
+            //            // Redraw the new shape
+            //            colorShape(shapes[dragShapeIndex], shapes[dragShapeIndex].PixelColor);
+            //        }
+            //        else if (shapes[dragShapeIndex] is Circle)
+            //        {
+            //            // Handle Circle
+            //        }
+
+            //    }
+            //}
+            isDragging = false;
+        }
+
+        private void colorShape(Shape shape, System.Windows.Media.Color color)
+        {
+            shape.PixelColor = color;
+            shape.imageCanvasBitmap = imageCanvasBitmap;
+            shape.Draw();
+        }
+
+        private void ImageCanvas_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (dragMode && isDragging)
+            {
+                int x = (int)e.GetPosition(ImageCanvas).X;
+                int y = (int)e.GetPosition(ImageCanvas).Y;
+                dragPoint = new Point(x, y, Colors.Black);
+                
+                if (dragShapeIndex != -1)
+                {
+                    if (shapes[dragShapeIndex] is Line)
+                    {
+                        // Clear the previous shape off the canvas
+                        //colorShape(shapes[dragShapeIndex], defaultBgColor);
+
+                        if (dragShapePointNum == 0)
+                            shapes[dragShapeIndex].startPoint = dragPoint;
+                        else if (dragShapePointNum == 1)
+                            shapes[dragShapeIndex].endPoint = dragPoint;
+
+                        // Redraw the new shape
+                        colorShape(shapes[dragShapeIndex], shapes[dragShapeIndex].PixelColor);
+                    }
+                    else if (shapes[dragShapeIndex] is Circle)
+                    {
+                        // Clear the previous shape off the canvas
+                        //colorShape(shapes[dragShapeIndex], defaultBgColor);
+
+                        
+                        int radius = shapes[dragShapeIndex].getDistance(shapes[dragShapeIndex].startPoint, shapes[dragShapeIndex].endPoint);
+                        
+                        int centerX = dragPoint.X;
+                        int centerY = dragPoint.Y;
+
+                        // Endpoint at circumferance at angle 0
+                        int circumX = centerX + radius;
+                        int circumY = centerY;
+                        shapes[dragShapeIndex].startPoint = dragPoint;
+                        shapes[dragShapeIndex].endPoint = new Point(circumX, circumY, shapes[dragShapeIndex].PixelColor);
+
+                        // Redraw the new shape
+                        colorShape(shapes[dragShapeIndex], defaultBgColor);
+                        colorShape(shapes[dragShapeIndex], shapes[dragShapeIndex].PixelColor);
+                    }
+
+                }
+            }
+        }
     }
 }
