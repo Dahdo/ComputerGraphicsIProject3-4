@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.DirectoryServices.ActiveDirectory;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -544,6 +545,105 @@ namespace ComputerGraphicsProject3_4
         public override bool IsSelected(int x, int y)
         {
             throw new NotImplementedException();
+        }
+    }
+
+    public class Rectangle : Shape
+    {
+ 
+        public List<Line> lineList { get; set; }
+
+        public Rectangle()
+        {
+            this.Thickness = 1;
+            this.ThickLine = false;
+            this.PixelColor = Colors.Yellow;
+            startPoint = new Point(-1, -1, PixelColor);
+            endPoint = new Point(-1, -1, PixelColor);
+            lineList = new List<Line>();
+            Antialiasing = false;
+            BgColor = MainWindow.defaultBgColor;
+        }
+
+        private void drawLine(Point point1, Point point2)
+        {
+             Line line = new Line();
+            // Assimulate line to our Polygon settings
+            line.PixelColor = this.PixelColor;
+            line.Thickness = this.Thickness;
+            line.ThickLine = this.ThickLine;
+            line.Antialiasing = this.Antialiasing;
+            line.imageCanvasBitmap = imageCanvasBitmap;
+
+            line.startPoint = point1;
+            line.endPoint = point2;
+
+            line.Draw();
+
+            lineList.Add(line);
+        }
+
+        private void drawRectangle()
+        {
+            int x1, x2, y1, y2;
+            if(startPoint.Y < endPoint.Y && startPoint.X < endPoint.X)
+            {
+                x1 = startPoint.X;
+                y1 = startPoint.Y;
+                x2 = endPoint.X;
+                y2 = endPoint.Y;
+            }
+            else if (startPoint.Y > endPoint.Y && startPoint.X > endPoint.X)
+            {
+                x2 = startPoint.X;
+                y2 = startPoint.Y;
+                x1 = endPoint.X;
+                y1 = endPoint.Y;
+            }
+            else if(startPoint.Y < endPoint.Y && startPoint.X > endPoint.X)
+            {
+                x2 = startPoint.X;
+                y1 = startPoint.Y;
+                x1 = endPoint.X;
+                y2 = endPoint.Y;
+            }
+            else if (startPoint.Y > endPoint.Y && startPoint.X < endPoint.X)
+            {
+                x1 = startPoint.X;
+                y2 = startPoint.Y;
+                x2 = endPoint.X;
+                y1 = endPoint.Y;
+            }
+            else
+            {
+                MessageBox.Show("Can't draw a rectangle from selected points");
+                return;
+            }
+
+            // Draw rectangle
+            drawLine(new Point(x1, y1, this.PixelColor), new Point(x2, y1, this.PixelColor)); // Top horizontal line
+            drawLine(new Point(x2, y1, this.PixelColor), new Point(x2, y2, this.PixelColor)); // Right vertical line
+            drawLine(new Point(x1, y2, this.PixelColor), new Point(x2, y2, this.PixelColor)); // Bottom horizontal line
+            drawLine(new Point(x1, y1, this.PixelColor), new Point(x1, y2, this.PixelColor)); // Left vertical line
+
+        }
+
+
+        public override void Draw()
+        {
+            drawRectangle();
+
+        }
+
+
+        public override bool IsSelected(int x, int y)
+        {
+            foreach (Line line in lineList)
+            {
+                if (line.IsSelected(x, y))
+                    return true;
+            }
+            return false;
         }
     }
 }

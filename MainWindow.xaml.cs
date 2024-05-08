@@ -24,6 +24,7 @@ namespace ComputerGraphicsProject3_4
         private Circle currentCircle;
         private Polygon currentPolygon;
         private LabPartClass currentLabPart;
+        private Rectangle currentRectangle;
         public static System.Windows.Media.Color defaultBgColor = Colors.Black;
 
         int mouseDownCount = 0;
@@ -132,7 +133,7 @@ namespace ComputerGraphicsProject3_4
                         }
                         if (currentPolygon.lastEdge(tmpPoint))
                         {
-                            mouseDownCount = 0; // Create new Polygon object and reset mouseDownCount
+                            mouseDownCount = 0; // reset mouseDownCount
                         }
 
                         break;
@@ -155,7 +156,6 @@ namespace ComputerGraphicsProject3_4
                             mouseDownCount = 0; // Reset mouseDownCount
                         }
                         break;
-
                     case "labpart":
                         if (currentLabPart == null || (currentLabPart.point0.X != -1 && mouseDownCount == 0)) // Check whether the currentLabPart has been used
                             initNewLabPart();
@@ -179,6 +179,24 @@ namespace ComputerGraphicsProject3_4
                             currentLabPart.point3.X = (int)e.GetPosition(ImageCanvas).X;
                             currentLabPart.point3.Y = (int)e.GetPosition(ImageCanvas).Y;
                             currentLabPart.Draw();
+                            mouseDownCount = 0;
+                        }
+                        break;
+                    case "rectangle":
+                        if (currentRectangle == null || (currentRectangle.startPoint.X != -1 && mouseDownCount == 0)) // Check whether the currentRectangle has been used
+                            initNewRectangle();
+                        ++mouseDownCount;
+                        if (mouseDownCount == 1)
+                        {
+                            currentRectangle.startPoint.X = (int)e.GetPosition(ImageCanvas).X;
+                            currentRectangle.startPoint.Y = (int)e.GetPosition(ImageCanvas).Y;
+                        }
+                        if (mouseDownCount == 2)
+                        {
+                            currentRectangle.endPoint.X = (int)e.GetPosition(ImageCanvas).X;
+                            currentRectangle.endPoint.Y = (int)e.GetPosition(ImageCanvas).Y;
+                            currentRectangle.Draw();
+
                             mouseDownCount = 0;
                         }
                         break;
@@ -223,6 +241,18 @@ namespace ComputerGraphicsProject3_4
             currentPolygon.Thickness = shapeThickness;
             shapes.Add(currentPolygon);
         }
+        private void initNewRectangle()
+        {
+            mouseDownCount = 0;
+            currentRectangle = new Rectangle();
+            currentRectangle.imageCanvasBitmap = imageCanvasBitmap;
+            if (AntiAliasingCheckBox != null)
+                currentRectangle.Antialiasing = AntiAliasingCheckBox.IsChecked ?? false;
+            if (ThickLineCheckBox != null)
+                currentRectangle.ThickLine = ThickLineCheckBox.IsChecked ?? false;
+            currentRectangle.Thickness = shapeThickness;
+            shapes.Add(currentRectangle);
+        }
 
         private void initNewLabPart()
         {
@@ -254,6 +284,11 @@ namespace ComputerGraphicsProject3_4
         private void CircleRadioBtn_Checked(object sender, RoutedEventArgs e)
         {
             selectedShape = "circle";
+        }
+        
+        private void RectangleRadioBtn_Checked(object sender, RoutedEventArgs e)
+        {
+            selectedShape = "rectangle";
         }
 
         private void ThickLineCheckBox_Checked(object sender, RoutedEventArgs e)
