@@ -48,6 +48,7 @@ namespace ComputerGraphicsProject3_4
     [XmlInclude(typeof(Line))]
     [XmlInclude(typeof(Circle))]
     [XmlInclude(typeof(Polygon))]
+    [XmlInclude(typeof(Rectangle))]
     public abstract class Shape
     {
         public Color PixelColor { get; set; }
@@ -548,6 +549,7 @@ namespace ComputerGraphicsProject3_4
         }
     }
 
+    [Serializable]
     public class Rectangle : Shape
     {
  
@@ -635,15 +637,13 @@ namespace ComputerGraphicsProject3_4
 
         }
 
-
         public override bool IsSelected(int x, int y)
         {
-            foreach (Line line in lineList)
-            {
-                if (line.IsSelected(x, y))
-                    return true;
-            }
-            return false;
+            Point TopLeft = lineList[0].startPoint;
+            Point BottomRight = lineList[1].endPoint;
+
+            return x >= TopLeft.X && x <= BottomRight.X &&
+            y >= TopLeft.Y && y <= BottomRight.Y;
         }
     }
 }

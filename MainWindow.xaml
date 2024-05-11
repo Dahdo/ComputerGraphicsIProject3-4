@@ -34,7 +34,7 @@
                     <RadioButton x:Name="PolygonRadioBtn" Content="Polygon" GroupName="ShapeOptions" Margin="0,0,0,5" Checked="PolygonRadioBtn_Checked"/>
                     <RadioButton x:Name="CircleRadioBtn" Content="Circle" GroupName="ShapeOptions" Margin="0,0,0,5" Checked="CircleRadioBtn_Checked"/>
                     <RadioButton x:Name="RectangleRadioBtn" Content="Rectangle" GroupName="ShapeOptions" Margin="0,0,0,5" Checked="RectangleRadioBtn_Checked"/>
-                    <RadioButton x:Name="LabPart3" Content="Lab Part" GroupName="ShapeOptions" Margin="0,0,0,5" Checked="LabPart3RadioBtn_Checked"/>
+                    <RadioButton x:Name="LabPart3" Content="Lab Part(3)" GroupName="ShapeOptions" Margin="0,0,0,5" Checked="LabPart3RadioBtn_Checked" IsEnabled="False" />
                     <CheckBox x:Name="AntiAliasingCheckBox" Content="Anti-aliasing (Xiaolin Wu)" Margin="0,0,0,5" Checked="AntiAliasingCheckBox_Checked" Unchecked="AntiAliasingCheckBox_UnChecked" />
                     <CheckBox x:Name="ThickLineCheckBox" Content="Thick Line (Brush)" Margin="0,0,0,5" Checked="ThickLineCheckBox_Checked" Unchecked="ThickLineCheckBox_UnChecked"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">

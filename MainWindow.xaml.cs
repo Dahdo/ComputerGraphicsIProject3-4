@@ -32,6 +32,7 @@ namespace ComputerGraphicsProject3_4
         private static int shapeThickness = 1;
         private Point rightClickedPoint;
         private bool dragMode = false;
+        private Point prevDragPoint;
         private Point dragPoint;
         private bool isDragging = false;
         private int dragShapeIndex = -1;
@@ -61,6 +62,7 @@ namespace ComputerGraphicsProject3_4
                 isDragging = true;
                 int x = (int)e.GetPosition(ImageCanvas).X;
                 int y = (int)e.GetPosition(ImageCanvas).Y;
+                prevDragPoint = dragPoint;
                 dragPoint = new Point(x, y, Colors.Black);
                 foreach(Shape shape in shapes)
                 {
@@ -81,6 +83,15 @@ namespace ComputerGraphicsProject3_4
                     }
 
                     else if (shape is Circle)
+                    {
+                        if (shape.IsSelected(dragPoint.X, dragPoint.Y))
+                        {
+                            dragShapeIndex = shapes.IndexOf(shape);
+                            dragShapePointNum = 0;
+                            break;
+                        }
+                    }
+                    else if (shape is Rectangle)
                     {
                         if (shape.IsSelected(dragPoint.X, dragPoint.Y))
                         {
@@ -577,6 +588,7 @@ namespace ComputerGraphicsProject3_4
             {
                 int x = (int)e.GetPosition(ImageCanvas).X;
                 int y = (int)e.GetPosition(ImageCanvas).Y;
+                prevDragPoint = dragPoint;
                 dragPoint = new Point(x, y, Colors.Black);
                 
                 if (dragShapeIndex != -1)
@@ -613,6 +625,24 @@ namespace ComputerGraphicsProject3_4
 
                         // Redraw the new shape
                         colorShape(shapes[dragShapeIndex], shapes[dragShapeIndex].PixelColor);
+                    }
+                    else if (shapes[dragShapeIndex] is Rectangle)
+                    {
+                        if(prevDragPoint != null) {
+                            int dx = dragPoint.X - prevDragPoint.X;
+                            int dy = dragPoint.Y - prevDragPoint.Y;
+
+                            int x1 = shapes[dragShapeIndex].startPoint.X + dx;
+                            int y1 = shapes[dragShapeIndex].startPoint.Y + dy;
+                            int x2 = shapes[dragShapeIndex].endPoint.X + dx;
+                            int y2 = shapes[dragShapeIndex].endPoint.Y + dy;
+
+                            shapes[dragShapeIndex].startPoint = new Point(x1, y1, shapes[dragShapeIndex].PixelColor);
+                            shapes[dragShapeIndex].endPoint = new Point(x2, y2, shapes[dragShapeIndex].PixelColor);
+
+                            // Redraw the new shape
+                            colorShape(shapes[dragShapeIndex], shapes[dragShapeIndex].PixelColor);
+                        }
                     }
 
                 }
