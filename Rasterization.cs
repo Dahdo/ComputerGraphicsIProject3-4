@@ -621,7 +621,8 @@ namespace ComputerGraphicsProject3_4
                 MessageBox.Show("Can't draw a rectangle from selected points");
                 return;
             }
-
+            // Clear the previous lines the list
+            lineList.Clear();
             // Draw rectangle
             drawLine(new Point(x1, y1, this.PixelColor), new Point(x2, y1, this.PixelColor)); // Top horizontal line
             drawLine(new Point(x2, y1, this.PixelColor), new Point(x2, y2, this.PixelColor)); // Right vertical line
