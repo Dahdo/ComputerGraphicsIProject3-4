@@ -44,6 +44,15 @@
                     <CheckBox x:Name="DragModeCheckBox" Content="Drag Mode" Margin="0,0,0,5"  Unchecked="DragModeCheckBox_UnChecked" Checked="DragModeCheckBox_Checked" />
                 </StackPanel>
             </TabItem>
+            <TabItem Header="Clipping and Filling">
+                <StackPanel HorizontalAlignment="Center" Margin="0 15">
+                    <Label Content="Select Clipping Polygon:" Margin="0 0 0 5"/>
+                    <ComboBox x:Name="clippingPolygonComboBox" Margin="0 0 0 5" SelectionChanged="clippingPolygonComboBox_SelectionChanged" DisplayMemberPath="Name"/>
+                    <Label Content="Select Clipped Polygon:"  Margin="0 0 0 5"/>
+                    <ComboBox x:Name="clippedPolygonComboBox" Margin="0 0 0 5" SelectionChanged="clippedPolygonComboBox_SelectionChanged" DisplayMemberPath="Name"/>
+                    <Button Content="Clip" Click="Clip_Click"/>
+                </StackPanel>
+            </TabItem>
         </TabControl>
         <DockPanel Grid.Column="1" Grid.ColumnSpan="2" Margin="313,0,0,0">
             <WrapPanel DockPanel.Dock="Bottom"  HorizontalAlignment="Center" Margin="0 5">

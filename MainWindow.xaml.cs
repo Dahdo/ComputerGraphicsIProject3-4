@@ -1,5 +1,8 @@
 ﻿using Microsoft.Win32;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Security.AccessControl;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,7 +22,7 @@ namespace ComputerGraphicsProject3_4
     {
         // Rasterization
         private WriteableBitmap imageCanvasBitmap;
-        List<Shape> shapes = new List<Shape>();
+        ObservableCollection<Shape> shapes { get; set; } = new ObservableCollection<Shape>();
         private Line currentLine;
         private Circle currentCircle;
         private Polygon currentPolygon;
@@ -37,11 +40,19 @@ namespace ComputerGraphicsProject3_4
         private bool isDragging = false;
         private int dragShapeIndex = -1;
         private int dragShapePointNum = -1;
+
+        // Clipping
+        public Shape clippingPolygon;
+        public Shape clippedPolygon;
         public MainWindow()
         {
             InitializeComponent();
             DataContext = this;
             InitializeRasterizationBitmap();
+
+
+            clippingPolygonComboBox.ItemsSource = shapes;
+            clippedPolygonComboBox.ItemsSource = shapes;
         }
 
         private void InitializeRasterizationBitmap()
@@ -226,6 +237,8 @@ namespace ComputerGraphicsProject3_4
             if (ThickLineCheckBox != null)
                 currentLine.ThickLine = ThickLineCheckBox.IsChecked ?? false;
             currentLine.Thickness = shapeThickness;
+            int lineCount = shapes.Count(item => item is Line);
+            currentLine.Name = currentLine.Name + "#" + ++lineCount;
             shapes.Add(currentLine);
         }
         private void initNewCircle()
@@ -238,6 +251,8 @@ namespace ComputerGraphicsProject3_4
             if (ThickLineCheckBox != null)
                 currentCircle.ThickLine = ThickLineCheckBox.IsChecked ?? false;
             currentCircle.Thickness = shapeThickness;
+            int cirlceCount = shapes.Count(item => item is Circle);
+            currentCircle.Name = currentCircle.Name + "#" + ++cirlceCount;
             shapes.Add(currentCircle);
         }
         private void initNewPolygon()
@@ -250,6 +265,8 @@ namespace ComputerGraphicsProject3_4
             if (ThickLineCheckBox != null)
                 currentPolygon.ThickLine = ThickLineCheckBox.IsChecked ?? false;
             currentPolygon.Thickness = shapeThickness;
+            int polgyonCount = shapes.Count(item => item is Polygon);
+            currentPolygon.Name = currentPolygon.Name + "#" + ++polgyonCount;
             shapes.Add(currentPolygon);
         }
         private void initNewRectangle()
@@ -262,6 +279,8 @@ namespace ComputerGraphicsProject3_4
             if (ThickLineCheckBox != null)
                 currentRectangle.ThickLine = ThickLineCheckBox.IsChecked ?? false;
             currentRectangle.Thickness = shapeThickness;
+            int rectangleCount = shapes.Count(item => item is Rectangle);
+            currentRectangle.Name = currentRectangle.Name + "#" + ++rectangleCount;
             shapes.Add(currentRectangle);
         }
 
@@ -419,7 +438,7 @@ namespace ComputerGraphicsProject3_4
                 try
                 {
                     // Serialize the list of shapes
-                    XmlSerializer serializer = new XmlSerializer(typeof(List<Shape>));
+                    XmlSerializer serializer = new XmlSerializer(typeof(ObservableCollection<Shape>));
                     using (FileStream stream = new FileStream(fileName, FileMode.Create))
                     {
                         serializer.Serialize(stream, shapes);
@@ -522,10 +541,10 @@ namespace ComputerGraphicsProject3_4
                 string fileName = openFileDialog.FileName;
                 try
                 {
-                    XmlSerializer serializer = new XmlSerializer(typeof(List<Shape>));
+                    XmlSerializer serializer = new XmlSerializer(typeof(ObservableCollection<Shape>));
                     using (FileStream stream = new FileStream(fileName, FileMode.Open))
                     {
-                        shapes = (List<Shape>)serializer.Deserialize(stream);
+                        shapes = (ObservableCollection<Shape>)serializer.Deserialize(stream);
 
                         // Redraw the loaded shapes
                         setDefaultBgColor();
@@ -647,6 +666,36 @@ namespace ComputerGraphicsProject3_4
 
                 }
             }
+        }
+
+        private void clippingPolygonComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ComboBox comboBox = (ComboBox)sender;
+            if (comboBox.SelectedIndex != -1)
+            {
+                int selectedIndex = comboBox.SelectedIndex;
+
+                clippingPolygon = shapes[selectedIndex];
+            }
+        }
+
+        private void clippedPolygonComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ComboBox comboBox = (ComboBox)sender;
+            if (comboBox.SelectedIndex != -1)
+            {
+                int selectedIndex = comboBox.SelectedIndex;
+
+                clippedPolygon = shapes[selectedIndex];
+            }
+        }
+
+        private void Clip_Click(object sender, RoutedEventArgs e)
+        {
+            List<Point> points = CyrusBeckClipping.ClipPolygon(clippedPolygon, clippingPolygon);
+            initNewPolygon();
+            currentPolygon.PixelColor = Colors.Red;
+            currentPolygon.DrawFromPoints(points);
         }
     }
 }

@@ -62,6 +62,9 @@ namespace ComputerGraphicsProject3_4
         public bool Antialiasing { get; set; }
 
         public bool ThickLine { get; set; }
+
+        public List<Line> Edges { get; set; }
+        public string Name { get; set; } = "Shape";
         public void PutSinglePixel(Point point)
         {
             // source: https://learn.microsoft.com/en-us/dotnet/api/system.windows.media.imaging.writeablebitmap?view=windowsdesktop-8.0
@@ -157,6 +160,7 @@ namespace ComputerGraphicsProject3_4
             endPoint = new Point(-1, -1, PixelColor);
             Antialiasing = false;
             BgColor = MainWindow.defaultBgColor;
+            Name = "Line";
         }
 
 
@@ -330,7 +334,7 @@ namespace ComputerGraphicsProject3_4
             endPoint = new Point(-1, -1, PixelColor);
             Antialiasing = false;
             BgColor = MainWindow.defaultBgColor;
-            ;
+            Name = "Circle";
         }
 
         private void CalculateMidpointCircleAlgorithm()
@@ -433,17 +437,16 @@ namespace ComputerGraphicsProject3_4
 
         private Line? line;
 
-        public List<Line> lineList { get; set; }
-
         public Polygon()
         {
             this.Thickness = 1;
             this.ThickLine = false;
             this.PixelColor = Colors.Yellow;
             _nextPoint = new Point(-1, -1, PixelColor);
-            lineList = new List<Line>();
+            Edges = new List<Line>();
             Antialiasing = false;
             BgColor = MainWindow.defaultBgColor;
+            Name = "Polygon";
         }
 
         private void CalculatePolygonPoints()
@@ -459,27 +462,27 @@ namespace ComputerGraphicsProject3_4
             // Set points
             line.startPoint = prevPoint!;
             if (lastEdge(nextPoint))
-                line.endPoint = lineList.First().startPoint;
+                line.endPoint = Edges.First().startPoint;
             else
                 line.endPoint = nextPoint;
 
             line.Draw();
             prevPoint = line.endPoint; // Keep the previous edge's endpoint
 
-            lineList.Add(line); // Possible redrawing duplication of one pixel on edge joints but not an issue
+            Edges.Add(line); // Possible redrawing duplication of one pixel on edge joints but not an issue
         }
 
         public bool lastEdge(Point point)
         {
-            if (lineList != null && lineList.Count > 0)
-                return getDistance(lineList.First().startPoint, point) <= 10;
+            if (Edges != null && Edges.Count > 0)
+                return getDistance(Edges.First().startPoint, point) <= 10;
             return false;
         }
 
 
         public override void Draw()
         {
-            foreach (Line line in lineList)
+            foreach (Line line in Edges)
             {
                 line.imageCanvasBitmap = imageCanvasBitmap;
                 line.Antialiasing = this.Antialiasing;
@@ -491,6 +494,28 @@ namespace ComputerGraphicsProject3_4
 
         }
 
+        public void DrawFromPoints(List<Point> points)
+        {
+            for (int i = 0; i < points.Count; i++)
+            {
+                line = new Line();
+                // Assimulate line to our Polygon properties
+                line.PixelColor = this.PixelColor;
+                line.Thickness = this.Thickness;
+                line.ThickLine = this.ThickLine;
+                line.Antialiasing = this.Antialiasing;
+                line.imageCanvasBitmap = imageCanvasBitmap;
+
+                int j = (i + 1) % points.Count; // Wrap around to the first point for the last Line
+                line.startPoint = points[i];
+                line.endPoint = points[j];
+
+                line.Draw();
+
+                Edges.Add(line);
+            }
+        }
+
         public void LineDraw()
         {
             CalculatePolygonPoints();
@@ -498,7 +523,7 @@ namespace ComputerGraphicsProject3_4
 
         public override bool IsSelected(int x, int y)
         {
-            foreach (Line line in lineList)
+            foreach (Line line in Edges)
             {
                 if (line.IsSelected(x, y))
                     return true;
@@ -552,8 +577,6 @@ namespace ComputerGraphicsProject3_4
     [Serializable]
     public class Rectangle : Shape
     {
- 
-        public List<Line> lineList { get; set; }
 
         public Rectangle()
         {
@@ -562,9 +585,10 @@ namespace ComputerGraphicsProject3_4
             this.PixelColor = Colors.Yellow;
             startPoint = new Point(-1, -1, PixelColor);
             endPoint = new Point(-1, -1, PixelColor);
-            lineList = new List<Line>();
+            Edges = new List<Line>();
             Antialiasing = false;
             BgColor = MainWindow.defaultBgColor;
+            Name = "Rectangle";
         }
 
         private void drawLine(Point point1, Point point2)
@@ -582,7 +606,7 @@ namespace ComputerGraphicsProject3_4
 
             line.Draw();
 
-            lineList.Add(line);
+            Edges.Add(line);
         }
 
         private void drawRectangle()
@@ -622,7 +646,7 @@ namespace ComputerGraphicsProject3_4
                 return;
             }
             // Clear the previous lines the list
-            lineList.Clear();
+            Edges.Clear();
             // Draw rectangle
             drawLine(new Point(x1, y1, this.PixelColor), new Point(x2, y1, this.PixelColor)); // Top horizontal line
             drawLine(new Point(x2, y1, this.PixelColor), new Point(x2, y2, this.PixelColor)); // Right vertical line
@@ -640,8 +664,8 @@ namespace ComputerGraphicsProject3_4
 
         public override bool IsSelected(int x, int y)
         {
-            Point TopLeft = lineList[0].startPoint;
-            Point BottomRight = lineList[1].endPoint;
+            Point TopLeft = Edges[0].startPoint;
+            Point BottomRight = Edges[1].endPoint;
 
             return x >= TopLeft.X && x <= BottomRight.X &&
             y >= TopLeft.Y && y <= BottomRight.Y;
