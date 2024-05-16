@@ -534,8 +534,8 @@ namespace ComputerGraphicsProject3_4
             if(openFileDialog.ShowDialog() == true)
             {
                 string fileName = openFileDialog.FileName;
-                //try
-                //{
+                try
+                {
                     XmlSerializer serializer = new XmlSerializer(typeof(ObservableCollection<Shape>));
                     using (FileStream stream = new FileStream(fileName, FileMode.Open))
                     {
@@ -549,11 +549,11 @@ namespace ComputerGraphicsProject3_4
                             shape.Draw();
                         }
                     }
-                //}
-                //catch (Exception ex)
-                //{
-                //    MessageBox.Show("Error loading file: " + ex.Message);
-                //}
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error loading file: " + ex.Message);
+                }
             }
         }
 
@@ -727,7 +727,7 @@ namespace ComputerGraphicsProject3_4
                 currentPolygon.DrawFromPoints(points);
             }
             else
-                MessageBox.Show("Ops! no polygon to be drawn");
+                MessageBox.Show("Oops! no polygon to be drawn");
         }
         private void FillColorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {

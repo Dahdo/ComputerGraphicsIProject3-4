@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace ComputerGraphicsProject3_4
 {
-
     class CyrusBeckClipping
     {
 
@@ -34,8 +33,8 @@ namespace ComputerGraphicsProject3_4
             foreach(Line line in clippedPolygon.Edges)
             {
                 List<Point> linePoints = ClipLine(line);
-                if (linePoints[0].X == -1 || linePoints[1].X == -1)
-                    continue;
+                //if (linePoints[0].X == -1 || linePoints[1].X == -1)
+                //    continue;
                 points.AddRange(linePoints);
             }
             return points;
