@@ -11,6 +11,7 @@ namespace ComputerGraphicsProject3_4
     using System.Collections.Generic;
     using System.Windows;
     using System.Windows.Media.Imaging;
+    using System.Drawing;
 
     public class ScanLineFill
     {
@@ -93,9 +94,12 @@ namespace ComputerGraphicsProject3_4
             return intersections;
         }
 
-        public static void Fill(List<Point> vertices, WriteableBitmap? imageCanvasBitmap, Color fillColor)
+        public static void Fill(List<Point> vertices, WriteableBitmap? imageCanvasBitmap, bool isImageFill, System.Windows.Media.Color fillColor , Bitmap fillImage = null)
         {
             List<Edge> edgeTable = new List<Edge>();
+
+            //Graphics sourceGraphics = Graphics.FromImage(fillImage);
+            //Bitmap fillImage = new Bitmap("C:\\Users\\Dahdo\\Desktop\\ComputerGraphicsI\\a.png");
 
             // Populate edge table
             for (int i = 0; i < vertices.Count - 1; i++)
@@ -140,8 +144,30 @@ namespace ComputerGraphicsProject3_4
 
                     for(int  x = x1; x < x2; x++)
                     {
-                        Point point = new Point(x, y, fillColor);
-                        PutSinglePixel(point, imageCanvasBitmap);
+                        if(isImageFill)
+                        {
+                            int adjustedX = x % fillImage.Width;
+
+                            int adjustedY = y % fillImage.Height;
+
+                            // Get the System.Drawing.Color
+                            System.Drawing.Color drawingColor = fillImage.GetPixel(adjustedX, adjustedY);
+
+                            // Convert System.Drawing.Color to System.Windows.Media.Color
+                            System.Windows.Media.Color pixelColor = System.Windows.Media.Color.FromArgb(drawingColor.A, drawingColor.R, drawingColor.G, drawingColor.B);
+
+
+                            Point point = new Point(x, y, pixelColor);
+
+                            // Put the pixel on the canvas
+                            PutSinglePixel(point, imageCanvasBitmap);
+                        }
+                        else
+                        {
+                            Point point = new Point(x, y, fillColor);
+                            PutSinglePixel(point, imageCanvasBitmap);
+                        }
+
                     }
                 }
             }
@@ -157,7 +183,7 @@ namespace ComputerGraphicsProject3_4
 
             int column = point.X;
             int row = point.Y;
-            Color color = point.PixelColor;
+            System.Windows.Media.Color color = point.PixelColor;
 
             try
             {

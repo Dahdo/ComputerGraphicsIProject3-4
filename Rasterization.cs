@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.DirectoryServices.ActiveDirectory;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -21,10 +24,10 @@ namespace ComputerGraphicsProject3_4
         public int X { get; set; }
         public int Y { get; set; }
 
-        public Color PixelColor;
+        public System.Windows.Media.Color PixelColor;
 
 
-        public Point(int x, int y, Color color)
+        public Point(int x, int y, System.Windows.Media.Color color)
         {
             X = x;
             Y = y;
@@ -51,8 +54,8 @@ namespace ComputerGraphicsProject3_4
     [XmlInclude(typeof(Rectangle))]
     public abstract class Shape
     {
-        public Color PixelColor { get; set; }
-        public Color BgColor { get; set; }
+        public System.Windows.Media.Color PixelColor { get; set; }
+        public System.Windows.Media.Color BgColor { get; set; }
         public Point startPoint { get; set; }
         public Point endPoint { get; set; }
         [XmlIgnore]
@@ -63,9 +66,44 @@ namespace ComputerGraphicsProject3_4
 
         public bool ThickLine { get; set; }
 
-        public Color FillColor { get; set; } = Colors.Red;
+        public System.Windows.Media.Color FillColor { get; set; } = Colors.Red;
 
         public bool SolidFilled { get; set; } = false;
+        public bool ImageFilled { get; set; } = false;
+
+        [XmlIgnore] 
+        public Bitmap FillImage { get; set; }
+        // Serialized property for FillImage
+        [XmlElement("FillImage")]
+        public byte[] FillImageSerialized
+        {
+            get
+            {
+                if (FillImage != null)
+                {
+                    using (MemoryStream stream = new MemoryStream())
+                    {
+                        FillImage.Save(stream, ImageFormat.Png);
+                        return stream.ToArray();
+                    }
+                }
+                return null;
+            }
+            set
+            {
+                if (value != null)
+                {
+                    using (MemoryStream stream = new MemoryStream(value))
+                    {
+                        FillImage = new Bitmap(stream);
+                    }
+                }
+                else
+                {
+                    FillImage = null;
+                }
+            }
+        }
 
         public List<Line> Edges { get; set; }
         public string Name { get; set; } = "Shape";
@@ -80,7 +118,7 @@ namespace ComputerGraphicsProject3_4
 
             int column = point.X;
             int row = point.Y;
-            Color color = point.PixelColor;
+            System.Windows.Media.Color color = point.PixelColor;
 
             try
             {
@@ -160,8 +198,17 @@ namespace ComputerGraphicsProject3_4
         public void FillSolidColor()
         {
             SolidFilled = true;
+            ImageFilled = false;
             List<Point> vertices = GetPoints();
-            ScanLineFill.Fill(vertices, imageCanvasBitmap, FillColor);
+            ScanLineFill.Fill(vertices, imageCanvasBitmap, false, FillColor);
+        }
+
+        public void FillWithImage()
+        {
+            SolidFilled = false;
+            ImageFilled = true;
+            List<Point> vertices = GetPoints();
+            ScanLineFill.Fill(vertices, imageCanvasBitmap, true, FillColor, FillImage);
         }
 
     }
@@ -245,12 +292,12 @@ namespace ComputerGraphicsProject3_4
                         byte r1 = (byte)(PixelColor.R * (1 - modf_y_exact) + BgColor.R * modf_y_exact);
                         byte g1 = (byte)(PixelColor.G * (1 - modf_y_exact) + BgColor.G * modf_y_exact);
                         byte b1 = (byte)(PixelColor.B * (1 - modf_y_exact) + BgColor.B * modf_y_exact);
-                        Color c1 = Color.FromRgb(r1, g1, b1);
+                        System.Windows.Media.Color c1 = System.Windows.Media.Color.FromRgb(r1, g1, b1);
 
                         byte r2 = (byte)(PixelColor.R * modf_y_exact + BgColor.R * (1 - modf_y_exact));
                         byte g2 = (byte)(PixelColor.G * modf_y_exact + BgColor.G * (1 - modf_y_exact));
                         byte b2 = (byte)(PixelColor.B * modf_y_exact + BgColor.B * (1 - modf_y_exact));
-                        Color c2 = Color.FromRgb(r2, g2, b2);
+                        System.Windows.Media.Color c2 = System.Windows.Media.Color.FromRgb(r2, g2, b2);
 
                         if (negativeY)
                         {
@@ -295,12 +342,12 @@ namespace ComputerGraphicsProject3_4
                         byte r1 = (byte)(PixelColor.R * (1 - modf_x_exact) + BgColor.R * modf_x_exact);
                         byte g1 = (byte)(PixelColor.G * (1 - modf_x_exact) + BgColor.G * modf_x_exact);
                         byte b1 = (byte)(PixelColor.B * (1 - modf_x_exact) + BgColor.B * modf_x_exact);
-                        Color c1 = Color.FromRgb(r1, g1, b1);
+                        System.Windows.Media.Color c1 = System.Windows.Media.Color.FromRgb(r1, g1, b1);
 
                         byte r2 = (byte)(PixelColor.R * modf_x_exact + BgColor.R * (1 - modf_x_exact));
                         byte g2 = (byte)(PixelColor.G * modf_x_exact + BgColor.G * (1 - modf_x_exact));
                         byte b2 = (byte)(PixelColor.B * modf_x_exact + BgColor.B * (1 - modf_x_exact));
-                        Color c2 = Color.FromRgb(r2, g2, b2);
+                        System.Windows.Media.Color c2 = System.Windows.Media.Color.FromRgb(r2, g2, b2);
                         if (negativeX)
                         {
                             PutPixel(new Point(Math.Abs((int)x_exact), Math.Abs(y), c2));
@@ -384,12 +431,12 @@ namespace ComputerGraphicsProject3_4
                     byte r2 = (byte)(PixelColor.R * (1 - T) + BgColor.R * T);
                     byte g2 = (byte)(PixelColor.G * (1 - T) + BgColor.G * T);
                     byte b2 = (byte)(PixelColor.B * (1 - T) + BgColor.B * T);
-                    Color c2 = Color.FromRgb(r2, g2, b2);
+                    System.Windows.Media.Color c2 = System.Windows.Media.Color.FromRgb(r2, g2, b2);
 
                     byte r1 = (byte)(PixelColor.R * T + BgColor.R * (1 - T));
                     byte g1 = (byte)(PixelColor.G * T + BgColor.G * (1 - T));
                     byte b1 = (byte)(PixelColor.B * T + BgColor.B * (1 - T));
-                    Color c1 = Color.FromRgb(r1, g1, b1);
+                    System.Windows.Media.Color c1 = System.Windows.Media.Color.FromRgb(r1, g1, b1);
 
                     putPoints(x, y_exact_ceil, c2);
                     putPoints(x, y_exact_ceil - 1, c1);
@@ -407,7 +454,7 @@ namespace ComputerGraphicsProject3_4
             return (int)Math.Sqrt(Math.Pow(this.endPoint.X - this.startPoint.X, 2) + Math.Pow(this.endPoint.Y - this.startPoint.Y, 2));
         }
 
-        private void putPoints(int x, int y, Color pixelColor)
+        private void putPoints(int x, int y, System.Windows.Media.Color pixelColor)
         {
             PutPixel(new Point(this.startPoint.X + x, this.startPoint.Y + y, pixelColor));
             PutPixel(new Point(this.startPoint.X + y, this.startPoint.Y + x, pixelColor));
@@ -511,6 +558,8 @@ namespace ComputerGraphicsProject3_4
 
                 if (SolidFilled)
                     FillSolidColor();
+                if (ImageFilled)
+                    FillWithImage();
             }
 
         }
@@ -680,6 +729,8 @@ namespace ComputerGraphicsProject3_4
             drawRectangle();
             if (SolidFilled)
                 FillSolidColor();
+            if (ImageFilled)
+                FillWithImage();
         }
 
         public override bool IsSelected(int x, int y)

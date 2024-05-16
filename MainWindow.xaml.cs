@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Drawing;
 using System.IO;
 using System.Reflection;
 using System.Security.AccessControl;
@@ -470,6 +471,9 @@ namespace ComputerGraphicsProject3_4
                 if (shape.IsSelected(rightClickedPoint.X, rightClickedPoint.Y))
                 {
                     shape.PixelColor = shape.BgColor;
+                    shape.FillColor = shape.BgColor;
+                    shape.ImageFilled = false;
+                    shape.SolidFilled = true;
                     shape.imageCanvasBitmap = imageCanvasBitmap;
                     shape.Draw();
                     shapes.Remove(shape);
@@ -484,7 +488,7 @@ namespace ComputerGraphicsProject3_4
             if (borderColorComboBox.SelectedItem != null)
             {
                 string colorName = ((PropertyInfo)(sender as ComboBox).SelectedItem).Name;
-                Color selectedColor = (Color)typeof(Colors).GetProperty(colorName).GetValue(null);
+                System.Windows.Media.Color selectedColor = (System.Windows.Media.Color)typeof(Colors).GetProperty(colorName).GetValue(null);
                 foreach (Shape shape in shapes)
                 {
                     if (shape.IsSelected(rightClickedPoint.X, rightClickedPoint.Y))
@@ -530,8 +534,8 @@ namespace ComputerGraphicsProject3_4
             if(openFileDialog.ShowDialog() == true)
             {
                 string fileName = openFileDialog.FileName;
-                try
-                {
+                //try
+                //{
                     XmlSerializer serializer = new XmlSerializer(typeof(ObservableCollection<Shape>));
                     using (FileStream stream = new FileStream(fileName, FileMode.Open))
                     {
@@ -545,11 +549,11 @@ namespace ComputerGraphicsProject3_4
                             shape.Draw();
                         }
                     }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Error loading file: " + ex.Message);
-                }
+                //}
+                //catch (Exception ex)
+                //{
+                //    MessageBox.Show("Error loading file: " + ex.Message);
+                //}
             }
         }
 
@@ -730,7 +734,7 @@ namespace ComputerGraphicsProject3_4
             if (FillColorComboBox.SelectedItem != null)
             {
                 string colorName = ((PropertyInfo)(sender as ComboBox).SelectedItem).Name;
-                Color selectedColor = (Color)typeof(Colors).GetProperty(colorName).GetValue(null);
+                System.Windows.Media.Color selectedColor = (System.Windows.Media.Color)typeof(Colors).GetProperty(colorName).GetValue(null);
                 foreach (Shape shape in shapes)
                 {
                     if (shape.IsSelected(rightClickedPoint.X, rightClickedPoint.Y))
@@ -748,6 +752,45 @@ namespace ComputerGraphicsProject3_4
                         break;
                     }
 
+                }
+            }
+        }
+        private void FillImageButton_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Title = "Open Image File",
+                Filter = "All Image Files|*.png;*.jpg;*.bmp|PNG Image (*.png)|*.png|JPEG Image (*.jpg)|*.jpg|BMP Image (*.bmp)|*.bmp"
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                string selectedFilePath = openFileDialog.FileName;
+
+                try
+                {
+                    Bitmap fillImage = new Bitmap(selectedFilePath);
+                    foreach (Shape shape in shapes)
+                    {
+                        if (shape.IsSelected(rightClickedPoint.X, rightClickedPoint.Y))
+                        {
+                            
+                            shape.imageCanvasBitmap = imageCanvasBitmap;
+        
+                            if (shape is Polygon || shape is Rectangle)
+                            {
+                                shape.FillImage = fillImage;
+                                shape.FillWithImage();
+                            }
+                            break;
+                        }
+
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error loading image: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
