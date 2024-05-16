@@ -227,6 +227,19 @@ namespace ComputerGraphicsProject3_4
                             mouseDownCount = 0;
                         }
                         break;
+                    case "flood-fill":
+                        int x = (int)e.GetPosition(ImageCanvas).X;
+                        int y = (int)e.GetPosition(ImageCanvas).Y;
+                        foreach (Shape shape in shapes)
+                        {
+                            if (shape.IsSelected(x, y))
+                            {
+                                FloodFill.Fill(x, y, shape.PixelColor, Colors.Red, imageCanvasBitmap);
+                                break;
+                            }
+                        }
+                        break;
+                        
                 }
             }
 
@@ -773,5 +786,12 @@ namespace ComputerGraphicsProject3_4
                 }
             }
         }
+
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            selectedShape = "flood-fill";
+        }
+
+
     }
 }

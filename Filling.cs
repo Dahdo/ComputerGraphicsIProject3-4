@@ -224,5 +224,115 @@ namespace ComputerGraphicsProject3_4
             }
         }
     }
+    public class FloodFill
+    {
+
+        public static WriteableBitmap imageCanvasBitmap;
+
+        public static void Fill(int x, int y, System.Windows.Media.Color boundaryColor, System.Windows.Media.Color newColor, WriteableBitmap imageCanvasBitmap_)
+        {
+            imageCanvasBitmap = imageCanvasBitmap_;
+            BoundaryFill4(x, y, boundaryColor, newColor);
+
+        }
+
+        private static void BoundaryFill4(int x, int y, System.Windows.Media.Color boundaryColor, System.Windows.Media.Color newColor)
+        {
+ 
+            if (x < 0 || y < 0 || x >= imageCanvasBitmap.PixelWidth || y >= imageCanvasBitmap.PixelHeight)
+                return;
+
+            System.Windows.Media.Color pixelColor = GetPixel(x, y, imageCanvasBitmap);
+
+            if (pixelColor == boundaryColor || pixelColor == newColor)
+                return;
+
+            PutSinglePixel(new Point(x, y, newColor), imageCanvasBitmap);
+
+            BoundaryFill4(x + 1, y, boundaryColor, newColor);
+            BoundaryFill4(x - 1, y, boundaryColor, newColor);
+            BoundaryFill4(x, y + 1, boundaryColor, newColor);
+            BoundaryFill4(x, y - 1, boundaryColor, newColor);
+        }
+        private static void PutSinglePixel(Point point, WriteableBitmap? imageCanvasBitmap)
+        {
+            if (imageCanvasBitmap == null)
+            {
+                MessageBox.Show("CanvasBitmap not set");
+                return;
+            }
+
+            int column = point.X;
+            int row = point.Y;
+            System.Windows.Media.Color color = point.PixelColor;
+
+            try
+            {
+                // Reserve the back buffer for updates.
+                imageCanvasBitmap.Lock();
+
+                unsafe
+                {
+                    // Get a pointer to the back buffer.
+                    IntPtr pBackBuffer = imageCanvasBitmap.BackBuffer;
+                    // Find the address of the pixel to draw.
+                    pBackBuffer += row * imageCanvasBitmap.BackBufferStride;
+                    pBackBuffer += column * 3;
+
+                    // Compute the pixel's color.
+                    int color_data = color.R << 16; // R
+                    color_data |= color.G << 8;   // G
+                    color_data |= color.B << 0;   // B
+
+                    //try
+                    //{
+                    //Assign the color data to the pixel.
+                    *((int*)pBackBuffer) = color_data;
+                    // Specify the area of the bitmap that changed.
+                    imageCanvasBitmap.AddDirtyRect(new Int32Rect(column, row, 1, 1));
+                    //}
+                    //catch(Exception e)
+                    //{
+                    //    MessageBox.Show(e.Message);
+                    //    return;
+                    //}
+                }
+            }
+            finally
+            {
+                // Release the back buffer and make it available for display.
+                imageCanvasBitmap.Unlock();
+            }
+        }
+        private static System.Windows.Media.Color GetPixel(int x, int y, WriteableBitmap? imageCanvasBitmap)
+        {
+
+            try
+            {
+                imageCanvasBitmap.Lock();
+
+                unsafe
+                {
+                    IntPtr pBackBuffer = imageCanvasBitmap.BackBuffer;
+                    pBackBuffer += y * imageCanvasBitmap.BackBufferStride;
+                    pBackBuffer += x * 3;
+
+                    int color_data = *((int*)pBackBuffer);
+
+                    byte[] colorBytes = BitConverter.GetBytes(color_data);
+
+                    byte blue = colorBytes[0];
+                    byte green = colorBytes[1];
+                    byte red = colorBytes[2];
+
+                    return System.Windows.Media.Color.FromRgb(red, green, blue);
+                }
+            }
+            finally
+            {
+                imageCanvasBitmap.Unlock();
+            }
+        }
+    }
 }
 

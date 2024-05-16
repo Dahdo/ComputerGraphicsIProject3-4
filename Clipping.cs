@@ -91,7 +91,6 @@ namespace ComputerGraphicsProject3_4
                 denominator[i] = Dot(normal[i], P1_P0);
             }
 
-            // Initializing the 't' values dynamically
             float[] t = new float[vertices.Count];
 
             // Making two vectors called 't entering'
@@ -120,10 +119,6 @@ namespace ComputerGraphicsProject3_4
             tL.Add(1f);
             temp[1] = Min(tL);
 
-            // Entering 't' value cannot be
-            // greater than exiting 't' value,
-            // hence, this is the case when the line
-            // is completely outside
             if (temp[0] > temp[1])
             {
                 newPair.Add(new Point(-1, -1, clippedLine.PixelColor));
