@@ -211,6 +211,52 @@ namespace ComputerGraphicsProject3_4
             ScanLineFill.Fill(vertices, imageCanvasBitmap, true, FillColor, FillImage);
         }
 
+        public bool IsConvex() 
+        {
+            return false; // not working properly. allow all for now
+            List<Point> points = GetPoints();
+            points = points.OrderBy(p => p.X).ToList();
+
+
+            if (points.Count < 3)
+                return false; // Convexity requires at least 3 points
+
+            for (int i = 0; i < points.Count; i++)
+            {
+                // Get three consecutive points
+                Point p1 = points[i];
+                Point p2 = points[(i + 1) % points.Count];
+                Point p3 = points[(i + 2) % points.Count];
+
+                // Calculate vectors for the edges
+                double vector1x = p2.X - p1.X;
+                double vector1y = p2.Y - p1.Y;
+                double vector2x = p3.X - p2.X;
+                double vector2y = p3.Y - p2.Y;
+
+                // Calculate dot product
+                double dotProduct = vector1x * vector2x + vector1y * vector2y;
+
+                // Calculate magnitudes of the vectors
+                double magnitude1 = Math.Sqrt(vector1x * vector1x + vector1y * vector1y);
+                double magnitude2 = Math.Sqrt(vector2x * vector2x + vector2y * vector2y);
+
+                // Calculate the angle between the edges
+                double angle = Math.Acos(dotProduct / (magnitude1 * magnitude2));
+
+                // If the angle is greater than or equal to 180 degrees, the polygon is concave
+                if (angle >= Math.PI)
+                    return false;
+            }
+
+            return true; // All interior angles are less than 180 degrees, hence convex
+        }
+
+
+
+
+
+
     }
 
     [Serializable]

@@ -33,8 +33,8 @@ namespace ComputerGraphicsProject3_4
             foreach(Line line in clippedPolygon.Edges)
             {
                 List<Point> linePoints = ClipLine(line);
-                //if (linePoints[0].X == -1 || linePoints[1].X == -1)
-                //    continue;
+                if (linePoints[0].X == -1 || linePoints[1].X == -1)
+                    continue;
                 points.AddRange(linePoints);
             }
             return points;
@@ -43,10 +43,20 @@ namespace ComputerGraphicsProject3_4
         private static List<Point> ClipLine(Line clippedLine)
         {
             List<Point> vertices = clippingPolygon.GetPoints();
+            vertices = vertices.OrderBy(p => p.X).ThenBy(p => p.Y).ToList();
             List<Point> line = new List<Point>
             {
-                clippedLine.startPoint, clippedLine.endPoint
+                clippedLine.startPoint,
+                clippedLine.endPoint,
             };
+            //line = line.OrderBy(p => p.X).ToList();
+
+            //List<Point> line = new List<Point>
+            //{
+            //    // Reverse the endpoints to have the startpoint with the least x value
+            //    clippedLine.startPoint.X < clippedLine.endPoint.X ? clippedLine.startPoint : clippedLine.endPoint,
+            //    clippedLine.startPoint.X < clippedLine.endPoint.X ? clippedLine.endPoint : clippedLine.startPoint,
+            //};
 
             List<Point> newPair = new List<Point>();
 

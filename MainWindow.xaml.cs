@@ -472,8 +472,11 @@ namespace ComputerGraphicsProject3_4
                 {
                     shape.PixelColor = shape.BgColor;
                     shape.FillColor = shape.BgColor;
-                    shape.ImageFilled = false;
-                    shape.SolidFilled = true;
+                    if (shape.ImageFilled)
+                    {
+                        shape.ImageFilled = false;
+                        shape.SolidFilled = true;
+                    }
                     shape.imageCanvasBitmap = imageCanvasBitmap;
                     shape.Draw();
                     shapes.Remove(shape);
@@ -671,6 +674,13 @@ namespace ComputerGraphicsProject3_4
                 int selectedIndex = comboBox.SelectedIndex;
 
                 clippingPolygon = shapes[selectedIndex];
+                if (clippingPolygon.IsConvex())
+                {
+                    MessageBox.Show("Can't clip with a convex polygon");
+                    clippingPolygon = null;
+                    clippingPolygonComboBox.SelectedIndex = -1;
+                    return;
+                }
             }
         }
 
@@ -685,38 +695,6 @@ namespace ComputerGraphicsProject3_4
             }
         }
 
-        //private void Clip_Click(object sender, RoutedEventArgs e)
-        //{
-        //    List<Point> points = CyrusBeckClipping.ClipPolygon(clippingPolygon, clippedPolygon);
-
-        //    MessageBox.Show(points.Count.ToString());
-        //    //initNewLine();
-        //    //currentLine.PixelColor = Colors.Red;
-        //    //currentLine.startPoint = points[0];
-        //    //currentLine.endPoint = points[1];
-        //    //currentLine.Draw();
-
-
-        //    for (int i = 0; i < points.Count; i++)
-        //    {
-        //        initNewLine();
-        //        currentLine.PixelColor = Colors.Red;
-
-        //        int j = (i + 1) % points.Count; // Wrap around to the first point for the last Line
-        //        Point p = new Point(points[i].X, points[i].Y, Colors.Red);
-        //        currentLine.startPoint = p;
-        //        p = new Point(points[j].X, points[j].Y, Colors.Red);
-        //        currentLine.endPoint = p;
-
-        //        currentLine.Draw();
-        //    }
-        //    //List<Point> points = currentre.GetPoints();
-        //    //MessageBox.Show(points.Count.ToString());
-        //    //initNewPolygon();
-        //    //currentPolygon.PixelColor = Colors.Red;
-        //    //currentPolygon.DrawFromPoints(points);
-        //}
-
         private void Clip_Click(object sender, RoutedEventArgs e)
         {
             List<Point> points = CyrusBeckClipping.ClipPolygon(clippingPolygon, clippedPolygon);
@@ -725,6 +703,7 @@ namespace ComputerGraphicsProject3_4
                 initNewPolygon();
                 currentPolygon.PixelColor = Colors.Red;
                 currentPolygon.DrawFromPoints(points);
+                currentPolygon = null; // retire the currentPolygon object
             }
             else
                 MessageBox.Show("Oops! no polygon to be drawn");
