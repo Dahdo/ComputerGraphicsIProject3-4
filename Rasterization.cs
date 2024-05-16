@@ -63,6 +63,10 @@ namespace ComputerGraphicsProject3_4
 
         public bool ThickLine { get; set; }
 
+        public Color FillColor { get; set; } = Colors.Red;
+
+        public bool SolidFilled { get; set; } = false;
+
         public List<Line> Edges { get; set; }
         public string Name { get; set; } = "Shape";
         public void PutSinglePixel(Point point)
@@ -146,6 +150,20 @@ namespace ComputerGraphicsProject3_4
         {
             return (int)Math.Sqrt(Math.Pow(p2.X - p1.X, 2) + Math.Pow(p2.Y - p1.Y, 2));
         }
+        public List<Point> GetPoints()
+        {
+            List<Point> points = new List<Point>();
+            foreach (Line line in Edges)
+                points.Add(line.startPoint);
+            return points;
+        }
+        public void FillSolidColor()
+        {
+            SolidFilled = true;
+            List<Point> vertices = GetPoints();
+            ScanLineFill.Fill(vertices, imageCanvasBitmap, FillColor);
+        }
+
     }
 
     [Serializable]
@@ -490,6 +508,9 @@ namespace ComputerGraphicsProject3_4
                 line.Thickness = this.Thickness;
                 line.PixelColor = this.PixelColor;
                 line.Draw();
+
+                if (SolidFilled)
+                    FillSolidColor();
             }
 
         }
@@ -577,7 +598,7 @@ namespace ComputerGraphicsProject3_4
     [Serializable]
     public class Rectangle : Shape
     {
-
+        private List<Point> points = new List<Point>();
         public Rectangle()
         {
             this.Thickness = 1;
@@ -593,6 +614,7 @@ namespace ComputerGraphicsProject3_4
 
         private void drawLine(Point point1, Point point2)
         {
+
              Line line = new Line();
             // Assimulate line to our Polygon settings
             line.PixelColor = this.PixelColor;
@@ -603,10 +625,8 @@ namespace ComputerGraphicsProject3_4
 
             line.startPoint = point1;
             line.endPoint = point2;
-
-            line.Draw();
-
             Edges.Add(line);
+            line.Draw();
         }
 
         private void drawRectangle()
@@ -647,19 +667,19 @@ namespace ComputerGraphicsProject3_4
             }
             // Clear the previous lines the list
             Edges.Clear();
-            // Draw rectangle
+            //Draw rectangle
             drawLine(new Point(x1, y1, this.PixelColor), new Point(x2, y1, this.PixelColor)); // Top horizontal line
             drawLine(new Point(x2, y1, this.PixelColor), new Point(x2, y2, this.PixelColor)); // Right vertical line
-            drawLine(new Point(x1, y2, this.PixelColor), new Point(x2, y2, this.PixelColor)); // Bottom horizontal line
-            drawLine(new Point(x1, y1, this.PixelColor), new Point(x1, y2, this.PixelColor)); // Left vertical line
-
+            drawLine(new Point(x2, y2, this.PixelColor), new Point(x1, y2, this.PixelColor)); // Bottom horizontal line
+            drawLine(new Point(x1, y2, this.PixelColor), new Point(x1, y1, this.PixelColor)); // Left vertical line
         }
 
 
         public override void Draw()
         {
             drawRectangle();
-
+            if (SolidFilled)
+                FillSolidColor();
         }
 
         public override bool IsSelected(int x, int y)

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Reflection;
 using System.Security.AccessControl;
 using System.Text;
 using System.Windows;
@@ -53,6 +54,9 @@ namespace ComputerGraphicsProject3_4
 
             clippingPolygonComboBox.ItemsSource = shapes;
             clippedPolygonComboBox.ItemsSource = shapes;
+
+            borderColorComboBox.ItemsSource = typeof(Colors).GetProperties();
+            FillColorComboBox.ItemsSource = typeof(Colors).GetProperties();
         }
 
         private void InitializeRasterizationBitmap()
@@ -474,40 +478,27 @@ namespace ComputerGraphicsProject3_4
 
             }
         }
-        private void ShapeChangeColor_Click(object sender, RoutedEventArgs e)
+        
+        private void borderColorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (int.TryParse(txtRed.Text, out int red) &&
-                int.TryParse(txtGreen.Text, out int green) &&
-                int.TryParse(txtBlue.Text, out int blue))
+            if (borderColorComboBox.SelectedItem != null)
             {
-                // Check if the values are within the valid range (0-255)
-                if (red >= 0 && red <= 255 &&
-                    green >= 0 && green <= 255 &&
-                    blue >= 0 && blue <= 255)
+                string colorName = ((PropertyInfo)(sender as ComboBox).SelectedItem).Name;
+                Color selectedColor = (Color)typeof(Colors).GetProperty(colorName).GetValue(null);
+                foreach (Shape shape in shapes)
                 {
-                    System.Windows.Media.Color newColor = System.Windows.Media.Color.FromRgb((byte)red, (byte)green, (byte)blue);
-                    foreach (Shape shape in shapes)
+                    if (shape.IsSelected(rightClickedPoint.X, rightClickedPoint.Y))
                     {
-                        if (shape.IsSelected(rightClickedPoint.X, rightClickedPoint.Y))
-                        {
-                            shape.PixelColor = newColor;
-                            shape.imageCanvasBitmap = imageCanvasBitmap;
-                            shape.Draw();
-                            break;
-                        }
-
+                        shape.PixelColor = selectedColor;
+                        shape.imageCanvasBitmap = imageCanvasBitmap;
+                        shape.Draw();
+                        break;
                     }
+
                 }
-                else
-                {
-                    MessageBox.Show("Please enter valid RGB values (0-255).", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-            else
-            {
-                MessageBox.Show("Please enter numeric values for RGB.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
         private void ShapeChangeThickness_Click(object sender, RoutedEventArgs e)
         {
             if (int.TryParse(txtThickness.Text, out int thickness))
@@ -690,12 +681,75 @@ namespace ComputerGraphicsProject3_4
             }
         }
 
+        //private void Clip_Click(object sender, RoutedEventArgs e)
+        //{
+        //    List<Point> points = CyrusBeckClipping.ClipPolygon(clippingPolygon, clippedPolygon);
+
+        //    MessageBox.Show(points.Count.ToString());
+        //    //initNewLine();
+        //    //currentLine.PixelColor = Colors.Red;
+        //    //currentLine.startPoint = points[0];
+        //    //currentLine.endPoint = points[1];
+        //    //currentLine.Draw();
+
+
+        //    for (int i = 0; i < points.Count; i++)
+        //    {
+        //        initNewLine();
+        //        currentLine.PixelColor = Colors.Red;
+
+        //        int j = (i + 1) % points.Count; // Wrap around to the first point for the last Line
+        //        Point p = new Point(points[i].X, points[i].Y, Colors.Red);
+        //        currentLine.startPoint = p;
+        //        p = new Point(points[j].X, points[j].Y, Colors.Red);
+        //        currentLine.endPoint = p;
+
+        //        currentLine.Draw();
+        //    }
+        //    //List<Point> points = currentre.GetPoints();
+        //    //MessageBox.Show(points.Count.ToString());
+        //    //initNewPolygon();
+        //    //currentPolygon.PixelColor = Colors.Red;
+        //    //currentPolygon.DrawFromPoints(points);
+        //}
+
         private void Clip_Click(object sender, RoutedEventArgs e)
         {
-            List<Point> points = CyrusBeckClipping.ClipPolygon(clippedPolygon, clippingPolygon);
-            initNewPolygon();
-            currentPolygon.PixelColor = Colors.Red;
-            currentPolygon.DrawFromPoints(points);
+            List<Point> points = CyrusBeckClipping.ClipPolygon(clippingPolygon, clippedPolygon);
+            if (points.Count > 0)
+            {
+                initNewPolygon();
+                currentPolygon.PixelColor = Colors.Red;
+                currentPolygon.DrawFromPoints(points);
+            }
+            else
+                MessageBox.Show("Ops! no polygon to be drawn");
+        }
+        private void FillColorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (FillColorComboBox.SelectedItem != null)
+            {
+                string colorName = ((PropertyInfo)(sender as ComboBox).SelectedItem).Name;
+                Color selectedColor = (Color)typeof(Colors).GetProperty(colorName).GetValue(null);
+                foreach (Shape shape in shapes)
+                {
+                    if (shape.IsSelected(rightClickedPoint.X, rightClickedPoint.Y))
+                    {
+
+                        if (shape is Polygon || shape is Rectangle)
+                        {
+                            
+                            shape.FillColor = selectedColor;
+                            //shape.imageCanvasBitmap = imageCanvasBitmap;
+                            shape.FillSolidColor();
+                        }
+                        else
+                            MessageBox.Show("Filling not supported on the selected shape!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        break;
+                    }
+
+                }
+            }
         }
     }
 }
