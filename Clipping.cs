@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace ComputerGraphicsProject3_4
 {
+    // The implementation is highly influenced by this source: https://www.geeksforgeeks.org/line-clipping-set-2-cyrus-beck-algorithm/
     class CyrusBeckClipping
     {
 
@@ -49,14 +50,6 @@ namespace ComputerGraphicsProject3_4
                 clippedLine.startPoint,
                 clippedLine.endPoint,
             };
-            //line = line.OrderBy(p => p.X).ToList();
-
-            //List<Point> line = new List<Point>
-            //{
-            //    // Reverse the endpoints to have the startpoint with the least x value
-            //    clippedLine.startPoint.X < clippedLine.endPoint.X ? clippedLine.startPoint : clippedLine.endPoint,
-            //    clippedLine.startPoint.X < clippedLine.endPoint.X ? clippedLine.endPoint : clippedLine.startPoint,
-            //};
 
             List<Point> newPair = new List<Point>();
 

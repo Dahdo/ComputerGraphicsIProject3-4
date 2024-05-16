@@ -15,6 +15,7 @@ namespace ComputerGraphicsProject3_4
 
     public class ScanLineFill
     {
+        // Source: https://github.com/shashankchandak/ScanLine
         private class Edge
         {
             public int x1, y1, x2, y2, dx, dy;
